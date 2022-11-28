@@ -7,9 +7,20 @@
 #define DEBUG_BAUDRATE 115200
 #define TFMINI_BAUDRATE 115200
 
+// distance measurements are currently taken in centimeters.
+// since swamp is place at the center of the navgrid, the formula
+// for grid dimension is (maxRange * 2) / scale maxRange = max range of
+// lidar sensor and scale = the size in physical space the each grid
+// cell represents (cm)
+// However, the arduino mega won't allow us to put more that 8k bytes
+// into memory so for now we have to go with an 80x80 grid
+#define MAP_SIZE 80
+#define MIDDLE_POSITION 40
+
 int distance = 0;
 int strength = 0;
 boolean receiveComplete = false;
+byte navGrid[MAP_SIZE][MAP_SIZE];
 
 //----------------------------------------------------------------
 // getTFMiniData: read lidar data from the tfmini. loops until it
@@ -63,7 +74,37 @@ void getTFminiData(int* distance, int* strength, boolean* complete) {
     }
 }
 
+void getGridObstacle(const int degRotation ) {
+
+    while(!receiveComplete) {
+        getTFminiData(&distance, &strength, &receiveComplete);
+    }
+    
+    
+
+    double radians = radians(degRotation);
+    double cosine = cos(radians);
+    double sine = sin(radians);
+
+    int x = cosine * distance + MIDDLE_POSITION;
+    int y = sine * distance + MIDDLE_POSITION;
+
+    Serial.print("distance: ");
+    Serial.println(distance);
+    Serial.print("x component: ");
+    Serial.println(x);
+    Serial.print("y component: ");
+    Serial.println(y);
+    
+    if((x < 80 && y < 80) && (x >=0 && y >= 0)) {
+        navGrid[x][y] = 1;
+    }
+
+}
+
 void setup() {
+
+    memset(navGrid, 0, sizeof(navGrid));
 
     // Initialize serial ports
     Serial.println ("Initializing...");
@@ -75,19 +116,32 @@ void setup() {
 
 
 void loop() {
-    
-    if(receiveComplete) {
+
+    // test rotating the lidar sensor 360 degrees and 
+    // mapping the location 
+    for(int i = 0; i <= 360; i += 2) {
+        getGridObstacle(i);
         receiveComplete = false;
-        Serial.print(distance);
-        Serial.print("cm\t");
-        Serial.print("strength: ");
-        Serial.print(strength);
-        Serial.print("\n");
     }
+
+    // print the navGrid to the serial port
+    for(int i = 0; i < MAP_SIZE; i++) {
+
+        for(int j = 0; j < MAP_SIZE; j++) {
+            Serial.print(navGrid[i][j]);
+            Serial.print(" ");
+        }
+        Serial.println();
+    }
+
+    // receiveComplete = false;
+    memset(navGrid, 0, sizeof(navGrid));
+    delay(10000);
+
 }
 
 // serialEvent1 is called automatically at the end of every
 // main loop iteration. 
 void serialEvent1() {
-    getTFminiData(&distance, &strength, &receiveComplete);
+    // getTFminiData(&distance, &strength, &receiveComplete);
 }
