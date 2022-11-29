@@ -8,8 +8,8 @@
 #define TFMINI_BAUDRATE 115200
 
 // distance measurements are currently taken in centimeters.
-// since swamp is place at the center of the navgrid, the formula
-// for grid dimension is (maxRange * 2) / scale maxRange = max range of
+// since swamp is placed at the center of the navgrid, the formula
+// for grid dimension is (maxRange * 2) / scale where maxRange = max range of
 // lidar sensor and scale = the size in physical space the each grid
 // cell represents (cm)
 // However, the arduino mega won't allow us to put more that 8k bytes
@@ -79,8 +79,6 @@ void getGridObstacle(const int degRotation ) {
     while(!receiveComplete) {
         getTFminiData(&distance, &strength, &receiveComplete);
     }
-    
-    
 
     double radians = radians(degRotation);
     double cosine = cos(radians);
