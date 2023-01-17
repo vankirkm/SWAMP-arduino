@@ -116,12 +116,15 @@ void setup() {
     Serial.println ("Initializing...");
     Serial.begin(DEBUG_BAUDRATE);
     while (!Serial);
+
+    // TODO - uncomment when ready to integrate lidar sensor
     //Serial1.begin(TFMINI_BAUDRATE);
     //while(!Serial1);
 }
 
 
 void loop() {
+
 
     leg1.write(45);
     leg2.write(45);
@@ -130,7 +133,7 @@ void loop() {
     leg2.write(90);
     delay(1000);
 
-    // uncomment this code when ready to integrate lidar sensor
+    // TODO - uncomment this code when ready to integrate lidar sensor
     // test rotating the lidar sensor 360 degrees and 
     // mapping the location 
     /*for(int i = 0; i <= 360; i += 2) {
