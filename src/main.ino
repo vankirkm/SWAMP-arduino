@@ -1,8 +1,10 @@
 /* 
 *   S.W.A.M.P. Arduino Driver 
-*   Michael Van Kirk, Matthew Susser
+*   Michael Van Kirk, Matthew Slusser
 *
-*/ 
+*/
+
+#include <Servo.h>
 
 #define DEBUG_BAUDRATE 115200
 #define TFMINI_BAUDRATE 115200
@@ -21,6 +23,9 @@ int distance = 0;
 int strength = 0;
 boolean receiveComplete = false;
 byte navGrid[MAP_SIZE][MAP_SIZE];
+
+Servo leg1;
+Servo leg2;
 
 //----------------------------------------------------------------
 // getTFMiniData: read lidar data from the tfmini. loops until it
@@ -102,22 +107,33 @@ void getGridObstacle(const int degRotation ) {
 
 void setup() {
 
+    leg1.attach(2);
+    leg2.attach(3);
+
     memset(navGrid, 0, sizeof(navGrid));
 
     // Initialize serial ports
     Serial.println ("Initializing...");
     Serial.begin(DEBUG_BAUDRATE);
     while (!Serial);
-    Serial1.begin(TFMINI_BAUDRATE);
-    while(!Serial1);  
+    //Serial1.begin(TFMINI_BAUDRATE);
+    //while(!Serial1);
 }
 
 
 void loop() {
 
+    leg1.write(45);
+    leg2.write(45);
+    delay(1000);
+    leg1.write(90);
+    leg2.write(90);
+    delay(1000);
+
+    // uncomment this code when ready to integrate lidar sensor
     // test rotating the lidar sensor 360 degrees and 
     // mapping the location 
-    for(int i = 0; i <= 360; i += 2) {
+    /*for(int i = 0; i <= 360; i += 2) {
         getGridObstacle(i);
         receiveComplete = false;
     }
@@ -134,12 +150,6 @@ void loop() {
 
     // receiveComplete = false;
     memset(navGrid, 0, sizeof(navGrid));
-    delay(10000);
+    //delay(10000);*/
 
-}
-
-// serialEvent1 is called automatically at the end of every
-// main loop iteration. 
-void serialEvent1() {
-    // getTFminiData(&distance, &strength, &receiveComplete);
 }
