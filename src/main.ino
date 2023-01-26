@@ -9,6 +9,15 @@
 #define DEBUG_BAUDRATE 115200
 #define TFMINI_BAUDRATE 115200
 
+// LegGroup - A struct that defines the interface used to 
+// define a leg in software. Each leg consists of 3 servos
+// that each serve as a joint
+struct LegGroup {
+    Servo ankle;
+    Servo knee;
+    Servo hip;
+};
+
 // distance measurements are currently taken in centimeters.
 // since swamp is placed at the center of the navgrid, the formula
 // for grid dimension is (maxRange * 2) / scale where maxRange = max range of
@@ -26,6 +35,7 @@ byte navGrid[MAP_SIZE][MAP_SIZE];
 
 Servo leg1;
 Servo leg2;
+Servo leg3;
 
 //----------------------------------------------------------------
 // getTFMiniData: read lidar data from the tfmini. loops until it
@@ -109,6 +119,7 @@ void setup() {
 
     leg1.attach(2);
     leg2.attach(3);
+    leg3.attach(4);
 
     memset(navGrid, 0, sizeof(navGrid));
 
@@ -128,9 +139,11 @@ void loop() {
 
     leg1.write(45);
     leg2.write(45);
+    leg3.write(45);
     delay(1000);
     leg1.write(90);
     leg2.write(90);
+    leg3.write(90);
     delay(1000);
 
     // TODO - uncomment this code when ready to integrate lidar sensor
