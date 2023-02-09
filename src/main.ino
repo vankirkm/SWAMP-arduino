@@ -27,6 +27,11 @@ byte navGrid[MAP_SIZE][MAP_SIZE];
 Servo leg1;
 Servo leg2;
 
+int lightSensor2Pin = 20;
+int lightSensor1Pin = 21;
+int liquidLevelPin = 24;
+int soilMoistureSensorPin = 25;
+
 //----------------------------------------------------------------
 // getTFMiniData: read lidar data from the tfmini. loops until it
 //                has read and verified a complete message, then
@@ -79,6 +84,8 @@ void getTFminiData(int* distance, int* strength, boolean* complete) {
     }
 }
 
+void 
+
 void getGridObstacle(const int degRotation ) {
 
     while(!receiveComplete) {
@@ -105,6 +112,18 @@ void getGridObstacle(const int degRotation ) {
 
 }
 
+bool getWaterLevelStatus(){
+    int liquidLevelStatus;
+    liquidLevelStatus = digitalRead(liquidLevelPin);
+    return liquidLevelStatus;
+}
+
+int getSoilMoistureData(){
+    int soilMoistureSensorData;
+    soilMoistureSensorData = digitalRead(soilMoistureSensorPin)
+    return soilMoistureSensorData;
+}
+
 void setup() {
 
     leg1.attach(2);
@@ -115,11 +134,16 @@ void setup() {
     // Initialize serial ports
     Serial.println ("Initializing...");
     Serial.begin(DEBUG_BAUDRATE);
-    while (!Serial);
 
+
+    while (!Serial);
     // TODO - uncomment when ready to integrate lidar sensor
     //Serial1.begin(TFMINI_BAUDRATE);
     //while(!Serial1);
+
+    // Liquid Level Sensor Initialize
+    pinMode(liquidLevelPin,INPUT_PULLUP);
+
 }
 
 
@@ -132,6 +156,12 @@ void loop() {
     leg1.write(90);
     leg2.write(90);
     delay(1000);
+
+    // reading value from liquid level sensor
+    int waterLevelStatus;
+    waterLevelStatus = getWaterLevelStatus()
+    Serial.print("waterLevelStatus = ");
+    Serial.println(waterLevelStatus, DEC);
 
     // TODO - uncomment this code when ready to integrate lidar sensor
     // test rotating the lidar sensor 360 degrees and 
