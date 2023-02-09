@@ -27,10 +27,10 @@ byte navGrid[MAP_SIZE][MAP_SIZE];
 Servo leg1;
 Servo leg2;
 
-int lightSensor2Pin = 20;
-int lightSensor1Pin = 21;
-int liquidLevelPin = 24;
-int soilMoistureSensorPin = 25;
+const int lightSensor2Pin = 20;
+const int lightSensor1Pin = 21;
+const int liquidLevelPin = 24;
+const int soilMoistureSensorPin = 4;
 
 //----------------------------------------------------------------
 // getTFMiniData: read lidar data from the tfmini. loops until it
@@ -84,10 +84,7 @@ void getTFminiData(int* distance, int* strength, boolean* complete) {
     }
 }
 
-void 
-
 void getGridObstacle(const int degRotation ) {
-
     while(!receiveComplete) {
         getTFminiData(&distance, &strength, &receiveComplete);
     }
@@ -113,15 +110,45 @@ void getGridObstacle(const int degRotation ) {
 }
 
 bool getWaterLevelStatus(){
-    int liquidLevelStatus;
-    liquidLevelStatus = digitalRead(liquidLevelPin);
+    bool liquidLevelStatus;
+    if(digitalRead(liquidLevelPin) == 1){
+        liquidLevelStatus = false;
+    }else{
+        liquidLevelStatus = true;
+    }
     return liquidLevelStatus;
 }
 
-int getSoilMoistureData(){
-    int soilMoistureSensorData;
-    soilMoistureSensorData = digitalRead(soilMoistureSensorPin)
-    return soilMoistureSensorData;
+void printWaterLevelStatus(){
+    bool waterLevelStatus = getWaterLevelStatus();
+    Serial.print("waterLevelStatus = ");
+    if(waterLevelStatus){
+        Serial.println("water detected");
+    }else{
+        Serial.println("water NOT detected");
+    }
+    // Serial.println(waterLevelStatus);
+}
+
+int getSoilMoistureStatus(){
+    int soilMoistureStatus = analogRead(soilMoistureSensorPin);
+    return soilMoistureStatus;
+}
+
+int getSoilMoisturePercent(int soilMoistureStatus){
+    // The sensor has a range of 280 to 625 in my apartment
+    const int dry = 625;
+    const int wet = 280;
+    return map(soilMoistureStatus, wet, dry, 100, 0);
+}
+
+void printSoilMoistureStatus(){
+    int soilMoistureStatus = getSoilMoistureStatus();
+    Serial.print("soilMoistureStatus = ");
+    Serial.println(soilMoistureStatus, DEC);
+    Serial.print("soilMoisturePercent = ");
+    Serial.print(getSoilMoisturePercent(soilMoistureStatus), DEC);
+    Serial.println("%");
 }
 
 void setup() {
@@ -149,7 +176,6 @@ void setup() {
 
 void loop() {
 
-
     leg1.write(45);
     leg2.write(45);
     delay(1000);
@@ -157,11 +183,11 @@ void loop() {
     leg2.write(90);
     delay(1000);
 
-    // reading value from liquid level sensor
-    int waterLevelStatus;
-    waterLevelStatus = getWaterLevelStatus()
-    Serial.print("waterLevelStatus = ");
-    Serial.println(waterLevelStatus, DEC);
+    printWaterLevelStatus();
+    bool waterLevelStatus = getWaterLevelStatus();
+
+    printSoilMoistureStatus();
+    int soilMoistureStatus = getSoilMoistureStatus();
 
     // TODO - uncomment this code when ready to integrate lidar sensor
     // test rotating the lidar sensor 360 degrees and 
