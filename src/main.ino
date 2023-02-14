@@ -5,6 +5,7 @@
 */
 
 #include <Servo.h>
+#include <hp_BH1750.h>
 
 #define DEBUG_BAUDRATE 115200
 #define TFMINI_BAUDRATE 115200
@@ -27,10 +28,13 @@ byte navGrid[MAP_SIZE][MAP_SIZE];
 Servo leg1;
 Servo leg2;
 
-const int lightSensor2Pin = 20;
-const int lightSensor1Pin = 21;
+const int lightSensorDataPin = 20;
+const int lightSensorClockPin = 21;
 const int liquidLevelPin = 24;
 const int soilMoistureSensorPin = 4;
+
+hp_BH1750 BH1750; // creates sensor object
+
 
 //----------------------------------------------------------------
 // getTFMiniData: read lidar data from the tfmini. loops until it
@@ -118,7 +122,6 @@ bool getWaterLevelStatus(){
     }
     return liquidLevelStatus;
 }
-
 void printWaterLevelStatus(){
     bool waterLevelStatus = getWaterLevelStatus();
     Serial.print("waterLevelStatus = ");
@@ -134,14 +137,12 @@ int getSoilMoistureStatus(){
     int soilMoistureStatus = analogRead(soilMoistureSensorPin);
     return soilMoistureStatus;
 }
-
 int getSoilMoisturePercent(int soilMoistureStatus){
     // The sensor has a range of 280 to 625 in my apartment
     const int dry = 625;
     const int wet = 280;
     return map(soilMoistureStatus, wet, dry, 100, 0);
 }
-
 void printSoilMoistureStatus(){
     int soilMoistureStatus = getSoilMoistureStatus();
     Serial.print("soilMoistureStatus = ");
@@ -151,8 +152,9 @@ void printSoilMoistureStatus(){
     Serial.println("%");
 }
 
-void setup() {
 
+
+void setup() {
     leg1.attach(2);
     leg2.attach(3);
 
@@ -183,11 +185,13 @@ void loop() {
     leg2.write(90);
     delay(1000);
 
-    printWaterLevelStatus();
-    bool waterLevelStatus = getWaterLevelStatus();
+    // printWaterLevelStatus();
+    // bool waterLevelStatus = getWaterLevelStatus();
 
-    printSoilMoistureStatus();
-    int soilMoistureStatus = getSoilMoistureStatus();
+    // printSoilMoistureStatus();
+    // int soilMoistureStatus = getSoilMoistureStatus();
+
+
 
     // TODO - uncomment this code when ready to integrate lidar sensor
     // test rotating the lidar sensor 360 degrees and 
