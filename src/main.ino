@@ -22,7 +22,7 @@
 
 int distance = 0;
 int strength = 0;
-boolean receiveComplete = false;
+bool receiveComplete = false;
 byte navGrid[MAP_SIZE][MAP_SIZE];
 
 Servo leg1;
@@ -30,6 +30,7 @@ Servo leg2;
 
 const int lightSensorDataPin = 20;
 const int lightSensorClockPin = 21;
+const int waterPumpPin = 22;
 const int liquidLevelPin = 24;
 const int soilMoistureSensorPin = 4;
 
@@ -152,7 +153,22 @@ void printSoilMoistureStatus(){
     Serial.println("%");
 }
 
+bool lightSensorConnected(){
+    if(!BH1750.begin(BH1750_TO_GROUND))
+    { // init the sensor with address pin connetcted to ground
+        Serial.println("No BH1750 sensor found!");
+        return false;
+    }
+    Serial.println("BH1750 sensor found!");
+    return true;
+}
 
+void getLuxReading(){
+    BH1750.start();              // starts a measurement
+    float lux = BH1750.getLux(); //  waits until a conversion finished
+    Serial.println(lux);
+    
+}
 
 void setup() {
     leg1.attach(2);
@@ -164,6 +180,15 @@ void setup() {
     Serial.println ("Initializing...");
     Serial.begin(DEBUG_BAUDRATE);
 
+    if (!lightSensorConnected()){
+        while (true)
+        {};
+    }
+    if (BH1750.calibrateTiming() < 2)
+        Serial.println("Calibration OK");
+    else
+        Serial.println("Calibration FAILED");
+    BH1750.start();
 
     while (!Serial);
     // TODO - uncomment when ready to integrate lidar sensor
@@ -191,7 +216,7 @@ void loop() {
     // printSoilMoistureStatus();
     // int soilMoistureStatus = getSoilMoistureStatus();
 
-
+    getLuxReading();
 
     // TODO - uncomment this code when ready to integrate lidar sensor
     // test rotating the lidar sensor 360 degrees and 
