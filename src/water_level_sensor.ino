@@ -10,14 +10,14 @@
 * ****************************************************/
 int liquid_level=0;
 int liquid_level_pin=5;
-void setup() {
+/*void setup() {
  Serial.begin(9600);
  pinMode(liquid_level_pin,INPUT_PULLUP);
-}
+}*/
 
-void loop() {
-Liquid_level=digitalRead(liquid_level_pin);
+/*void loop() {
+liquid_level=digitalRead(liquid_level_pin);
 Serial.print("Liquid_level= ");
-Serial.println(Liquid_level,DEC);
+Serial.println(liquid_level,DEC);
 delay(500);
-}
+}*/

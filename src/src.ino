@@ -4,6 +4,14 @@
 *
 */
 
+// Notes
+//
+// Servo Movement Directions
+// -------------------------
+// The to move the left legs in a forward direction, the hip angle
+// need to Increase from 60 degrees. The opposite is true for the left
+
+
 #include <Servo.h>
 
 #define DEBUG_BAUDRATE 115200
@@ -32,10 +40,12 @@ int distance = 0;
 int strength = 0;
 boolean receiveComplete = false;
 byte navGrid[MAP_SIZE][MAP_SIZE];
-
-Servo leg1;
-Servo leg2;
-Servo leg3;
+LegGroup leftFront;
+LegGroup leftMid;
+LegGroup leftRear;
+LegGroup rightFront;
+LegGroup rightMid;
+LegGroup rightRear;
 
 //----------------------------------------------------------------
 // getTFMiniData: read lidar data from the tfmini. loops until it
@@ -115,11 +125,109 @@ void getGridObstacle(const int degRotation ) {
 
 }
 
+void forwardStep() {
+    int midPosition = 60;
+    int kneeMidPoint = 60;
+
+    for(int i = 1; i <= 20; i++) {
+        // moving set
+        leftFront.hip.write(midPosition + i);
+        leftRear.hip.write(midPosition + i);
+        rightMid.hip.write(midPosition - i);
+
+        // static set
+        rightFront.hip.write(midPosition + i);
+        rightRear.hip.write(midPosition + i);
+        leftMid.hip.write(midPosition - i);
+
+        if(i <= 10) {
+            kneeMidPoint-=5;
+            leftFront.knee.write(kneeMidPoint);
+            leftRear.knee.write(kneeMidPoint);
+            rightMid.knee.write(kneeMidPoint);
+        } else {
+            kneeMidPoint+=5;
+            leftFront.knee.write(kneeMidPoint);
+            leftRear.knee.write(kneeMidPoint);
+            rightMid.knee.write(kneeMidPoint);
+        }
+        delay(20);
+    }
+
+    for(int i = 1; i <= 20; i++) {
+        // moving set
+        rightFront.hip.write(midPosition - i);
+        rightRear.hip.write(midPosition - i);
+        leftMid.hip.write(midPosition + i);
+
+        // static set
+        leftFront.hip.write(midPosition - i);
+        leftRear.hip.write(midPosition - i);
+        rightMid.hip.write(midPosition + i);
+
+        if(i <= 10) {
+            kneeMidPoint-=5;
+            rightFront.knee.write(kneeMidPoint);
+            rightRear.knee.write(kneeMidPoint);
+            leftMid.knee.write(kneeMidPoint);
+        } else {
+            kneeMidPoint+=5;
+            rightFront.knee.write(kneeMidPoint);
+            rightRear.knee.write(kneeMidPoint);
+            leftMid.knee.write(kneeMidPoint);
+        }
+        delay(20);
+    }
+}
+
 void setup() {
 
-    leg1.attach(2);
-    leg2.attach(3);
-    leg3.attach(4);
+    leftFront.hip.attach(48);
+    leftFront.knee.attach(49);
+    leftFront.ankle.attach(2);
+    leftMid.hip.attach(6);
+    leftMid.knee.attach(7);
+    leftMid.ankle.attach(8);
+    leftRear.hip.attach(12);
+    leftRear.knee.attach(13);
+    leftRear.ankle.attach(44);
+    rightFront.hip.attach(3);
+    rightFront.knee.attach(4);
+    rightFront.ankle.attach(5);
+    rightMid.hip.attach(9);
+    rightMid.knee.attach(10);
+    rightMid.ankle.attach(11);
+    rightRear.hip.attach(45);
+    rightRear.knee.attach(46);
+    rightRear.ankle.attach(47);
+
+    // Initialize servo positions
+
+    leftFront.hip.write(60);
+    leftFront.knee.write(60);
+    leftFront.ankle.write(60);
+
+    leftMid.hip.write(60);
+    leftMid.knee.write(60);
+    leftMid.ankle.write(60);
+
+    leftRear.hip.write(60);
+    leftRear.knee.write(60);
+    leftRear.ankle.write(60);
+
+    rightFront.hip.write(60);
+    rightFront.knee.write(60);
+    rightFront.ankle.write(60);
+
+    rightMid.hip.write(60);
+    rightMid.knee.write(60);
+    rightMid.ankle.write(60);
+
+    rightRear.hip.write(60);
+    rightRear.knee.write(60);
+    rightRear.ankle.write(60);
+
+    delay(2000);
 
     memset(navGrid, 0, sizeof(navGrid));
 
@@ -136,15 +244,9 @@ void setup() {
 
 void loop() {
 
+    forwardStep();
+    delay(20);
 
-    leg1.write(45);
-    leg2.write(45);
-    leg3.write(45);
-    delay(1000);
-    leg1.write(90);
-    leg2.write(90);
-    leg3.write(90);
-    delay(1000);
 
     // TODO - uncomment this code when ready to integrate lidar sensor
     // test rotating the lidar sensor 360 degrees and 
