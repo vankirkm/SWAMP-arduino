@@ -140,6 +140,7 @@ int getSoilMoistureStatus(){
 }
 int getSoilMoisturePercent(int soilMoistureStatus){
     // The sensor has a range of 280 to 625 in my apartment
+    // The sensor has a range of 260 to 570 in the Boffin Factory
     const int dry = 625;
     const int wet = 280;
     return map(soilMoistureStatus, wet, dry, 100, 0);
@@ -170,6 +171,19 @@ void getLuxReading(){
     
 }
 
+void lightSensorStartup(){
+    if (!lightSensorConnected())
+    {
+        while (true){
+        };
+    }
+    if (BH1750.calibrateTiming() < 2)
+        Serial.println("Calibration OK");
+    else
+        Serial.println("Calibration FAILED");
+    BH1750.start();
+}
+
 void setup() {
     leg1.attach(2);
     leg2.attach(3);
@@ -180,15 +194,7 @@ void setup() {
     Serial.println ("Initializing...");
     Serial.begin(DEBUG_BAUDRATE);
 
-    if (!lightSensorConnected()){
-        while (true)
-        {};
-    }
-    if (BH1750.calibrateTiming() < 2)
-        Serial.println("Calibration OK");
-    else
-        Serial.println("Calibration FAILED");
-    BH1750.start();
+    // lightSensorStartup();
 
     while (!Serial);
     // TODO - uncomment when ready to integrate lidar sensor
@@ -213,10 +219,10 @@ void loop() {
     // printWaterLevelStatus();
     // bool waterLevelStatus = getWaterLevelStatus();
 
-    // printSoilMoistureStatus();
-    // int soilMoistureStatus = getSoilMoistureStatus();
+    printSoilMoistureStatus();
+    int soilMoistureStatus = getSoilMoistureStatus();
 
-    getLuxReading();
+    // getLuxReading();
 
     // TODO - uncomment this code when ready to integrate lidar sensor
     // test rotating the lidar sensor 360 degrees and 
