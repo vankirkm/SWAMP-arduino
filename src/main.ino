@@ -28,11 +28,7 @@ byte navGrid[MAP_SIZE][MAP_SIZE];
 Servo leg1;
 Servo leg2;
 
-const int lightSensorDataPin = 20;
-const int lightSensorClockPin = 21;
-const int waterPumpPin = 22;
-const int liquidLevelPin = 24;
-const int soilMoistureSensorPin = 4;
+#define waterPumpPin 22
 
 hp_BH1750 BH1750; // creates sensor object
 
@@ -101,11 +97,11 @@ void getGridObstacle(const int degRotation ) {
     int x = cosine * distance + MIDDLE_POSITION;
     int y = sine * distance + MIDDLE_POSITION;
 
-    Serial.print("distance: ");
+    Serial.print(F("distance: "));
     Serial.println(distance);
-    Serial.print("x component: ");
+    Serial.print(F("x component: "));
     Serial.println(x);
-    Serial.print("y component: ");
+    Serial.print(F("y component: "));
     Serial.println(y);
     
     if((x < 80 && y < 80) && (x >=0 && y >= 0)) {
@@ -115,6 +111,7 @@ void getGridObstacle(const int degRotation ) {
 }
 
 bool getWaterLevelStatus(){
+    #define liquidLevelPin 24
     bool liquidLevelStatus;
     if(digitalRead(liquidLevelPin) == 1){
         liquidLevelStatus = false;
@@ -125,42 +122,43 @@ bool getWaterLevelStatus(){
 }
 void printWaterLevelStatus(){
     bool waterLevelStatus = getWaterLevelStatus();
-    Serial.print("waterLevelStatus = ");
+    Serial.print(F("waterLevelStatus = "));
     if(waterLevelStatus){
-        Serial.println("water detected");
+        Serial.println(F("water detected"));
     }else{
-        Serial.println("water NOT detected");
+        Serial.println(F("water NOT detected"));
     }
     // Serial.println(waterLevelStatus);
 }
 
 int getSoilMoistureStatus(){
+    #define soilMoistureSensorPin 4
     int soilMoistureStatus = analogRead(soilMoistureSensorPin);
     return soilMoistureStatus;
 }
 int getSoilMoisturePercent(int soilMoistureStatus){
     // The sensor has a range of 280 to 625 in my apartment
     // The sensor has a range of 260 to 570 in the Boffin Factory
-    const int dry = 625;
-    const int wet = 280;
+    #define dry 625
+    #define wet 280
     return map(soilMoistureStatus, wet, dry, 100, 0);
 }
 void printSoilMoistureStatus(){
     int soilMoistureStatus = getSoilMoistureStatus();
-    Serial.print("soilMoistureStatus = ");
+    Serial.print(F("soilMoistureStatus = "));
     Serial.println(soilMoistureStatus, DEC);
-    Serial.print("soilMoisturePercent = ");
+    Serial.print(F("soilMoisturePercent = "));
     Serial.print(getSoilMoisturePercent(soilMoistureStatus), DEC);
-    Serial.println("%");
+    Serial.println(F("%"));
 }
 
 bool lightSensorConnected(){
     if(!BH1750.begin(BH1750_TO_GROUND))
     { // init the sensor with address pin connetcted to ground
-        Serial.println("No BH1750 sensor found!");
+        Serial.println(F("No BH1750 sensor found!"));
         return false;
     }
-    Serial.println("BH1750 sensor found!");
+    Serial.println(F("BH1750 sensor found!"));
     return true;
 }
 
@@ -178,9 +176,9 @@ void lightSensorStartup(){
         };
     }
     if (BH1750.calibrateTiming() < 2)
-        Serial.println("Calibration OK");
+        Serial.println(F("Calibration OK"));
     else
-        Serial.println("Calibration FAILED");
+        Serial.println(F("Calibration FAILED"));
     BH1750.start();
 }
 
@@ -191,7 +189,7 @@ void setup() {
     memset(navGrid, 0, sizeof(navGrid));
 
     // Initialize serial ports
-    Serial.println ("Initializing...");
+    Serial.println (F("Initializing..."));
     Serial.begin(DEBUG_BAUDRATE);
 
     // lightSensorStartup();
