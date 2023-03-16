@@ -180,6 +180,57 @@ void forwardStep() {
     }
 }
 
+void centipedeStep() {
+    int leftHipPosition = 60;
+    int rightHipPosition = 60;
+    int kneePosition = 60;
+
+    LegGroup leftLegs[] = {leftFront, leftMid, leftRear};
+    LegGroup rightLegs[] = {rightFront, rightMid, rightRear};
+
+    for(int i = 0; i < 3; i++) {
+        for(int j = 0; j < 60; j++) {
+            if(j % 3 == 0) {
+                leftHipPosition++;
+                leftLegs[i].hip.write(leftHipPosition);
+            }
+            if(j <= 30) {
+                kneePosition++;
+                leftLegs[i].knee.write(kneePosition);
+            } else {
+                kneePosition--;
+                leftLegs[i].knee.write(kneePosition);
+                leftLegs[i].ankle.write(kneePosition);
+            }
+            delay(5);
+            kneePosition = 60;
+            if(j % 3 == 0) {
+                rightHipPosition--;
+                rightLegs[i].hip.write(rightHipPosition);
+            }
+            if(j <= 30) {
+                kneePosition++;
+                rightLegs[i].knee.write(kneePosition);
+            } else {
+                kneePosition--;
+                rightLegs[i].knee.write(kneePosition);
+                rightLegs[i].ankle.write(kneePosition);
+            }
+        }
+    }
+
+    for(int i = 0; i < 30; i++) {
+        for(int j = 0; j < 3; j++) {
+            rightHipPosition++;
+            leftHipPosition--;
+            leftLegs[j].hip.write(leftHipPosition);
+            leftLegs[j].hip.write(rightHipPosition);
+        }
+        delay(5);
+    }
+
+}
+
 void setup() {
 
     leftFront.hip.attach(48);
