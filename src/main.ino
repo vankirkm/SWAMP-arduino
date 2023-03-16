@@ -5,6 +5,7 @@
 */
 
 #include <Servo.h>
+#include <hp_BH1750.h>
 
 #define DEBUG_BAUDRATE 115200
 #define TFMINI_BAUDRATE 115200
@@ -30,12 +31,17 @@ struct LegGroup {
 
 int distance = 0;
 int strength = 0;
-boolean receiveComplete = false;
+bool receiveComplete = false;
 byte navGrid[MAP_SIZE][MAP_SIZE];
 
 Servo leg1;
 Servo leg2;
 Servo leg3;
+
+#define waterPumpPin 22
+
+hp_BH1750 BH1750; // creates sensor object
+
 
 //----------------------------------------------------------------
 // getTFMiniData: read lidar data from the tfmini. loops until it
@@ -90,7 +96,6 @@ void getTFminiData(int* distance, int* strength, boolean* complete) {
 }
 
 void getGridObstacle(const int degRotation ) {
-
     while(!receiveComplete) {
         getTFminiData(&distance, &strength, &receiveComplete);
     }
@@ -102,11 +107,11 @@ void getGridObstacle(const int degRotation ) {
     int x = cosine * distance + MIDDLE_POSITION;
     int y = sine * distance + MIDDLE_POSITION;
 
-    Serial.print("distance: ");
+    Serial.print(F("distance: "));
     Serial.println(distance);
-    Serial.print("x component: ");
+    Serial.print(F("x component: "));
     Serial.println(x);
-    Serial.print("y component: ");
+    Serial.print(F("y component: "));
     Serial.println(y);
     
     if((x < 80 && y < 80) && (x >=0 && y >= 0)) {
@@ -115,8 +120,79 @@ void getGridObstacle(const int degRotation ) {
 
 }
 
-void setup() {
+bool getWaterLevelStatus(){
+    #define liquidLevelPin 24
+    bool liquidLevelStatus;
+    if(digitalRead(liquidLevelPin) == 1){
+        liquidLevelStatus = false;
+    }else{
+        liquidLevelStatus = true;
+    }
+    return liquidLevelStatus;
+}
+void printWaterLevelStatus(){
+    bool waterLevelStatus = getWaterLevelStatus();
+    Serial.print(F("waterLevelStatus = "));
+    if(waterLevelStatus){
+        Serial.println(F("water detected"));
+    }else{
+        Serial.println(F("water NOT detected"));
+    }
+    // Serial.println(waterLevelStatus);
+}
 
+int getSoilMoistureStatus(){
+    #define soilMoistureSensorPin 4
+    int soilMoistureStatus = analogRead(soilMoistureSensorPin);
+    return soilMoistureStatus;
+}
+int getSoilMoisturePercent(int soilMoistureStatus){
+    // The sensor has a range of 280 to 625 in my apartment
+    // The sensor has a range of 260 to 570 in the Boffin Factory
+    #define dry 625
+    #define wet 280
+    return map(soilMoistureStatus, wet, dry, 100, 0);
+}
+void printSoilMoistureStatus(){
+    int soilMoistureStatus = getSoilMoistureStatus();
+    Serial.print(F("soilMoistureStatus = "));
+    Serial.println(soilMoistureStatus, DEC);
+    Serial.print(F("soilMoisturePercent = "));
+    Serial.print(getSoilMoisturePercent(soilMoistureStatus), DEC);
+    Serial.println(F("%"));
+}
+
+bool lightSensorConnected(){
+    if(!BH1750.begin(BH1750_TO_GROUND))
+    { // init the sensor with address pin connetcted to ground
+        Serial.println(F("No BH1750 sensor found!"));
+        return false;
+    }
+    Serial.println(F("BH1750 sensor found!"));
+    return true;
+}
+
+void getLuxReading(){
+    BH1750.start();              // starts a measurement
+    float lux = BH1750.getLux(); //  waits until a conversion finished
+    Serial.println(lux);
+    
+}
+
+void lightSensorStartup(){
+    if (!lightSensorConnected())
+    {
+        while (true){
+        };
+    }
+    if (BH1750.calibrateTiming() < 2)
+        Serial.println(F("Calibration OK"));
+    else
+        Serial.println(F("Calibration FAILED"));
+    BH1750.start();
+}
+
+void setup() {
     leg1.attach(2);
     leg2.attach(3);
     leg3.attach(4);
@@ -124,18 +200,23 @@ void setup() {
     memset(navGrid, 0, sizeof(navGrid));
 
     // Initialize serial ports
-    Serial.println ("Initializing...");
+    Serial.println (F("Initializing..."));
     Serial.begin(DEBUG_BAUDRATE);
-    while (!Serial);
 
+    // lightSensorStartup();
+
+    while (!Serial);
     // TODO - uncomment when ready to integrate lidar sensor
     //Serial1.begin(TFMINI_BAUDRATE);
     //while(!Serial1);
+
+    // Liquid Level Sensor Initialize
+    pinMode(liquidLevelPin,INPUT_PULLUP);
+
 }
 
 
 void loop() {
-
 
     leg1.write(45);
     leg2.write(45);
@@ -145,6 +226,14 @@ void loop() {
     leg2.write(90);
     leg3.write(90);
     delay(1000);
+
+    // printWaterLevelStatus();
+    // bool waterLevelStatus = getWaterLevelStatus();
+
+    printSoilMoistureStatus();
+    int soilMoistureStatus = getSoilMoistureStatus();
+
+    // getLuxReading();
 
     // TODO - uncomment this code when ready to integrate lidar sensor
     // test rotating the lidar sensor 360 degrees and 
