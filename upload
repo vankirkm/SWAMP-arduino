@@ -1,0 +1,5 @@
+#! /bin/sh
+# This script is to streamline compiling and uploading .ino files to the Arduino Mega from the Raspberry Pi
+arduino-cli compile --fqbn arduino:avr:mega src/src.ino
+arduino-cli upload -p /dev/ttyACM0 --fqbn arduino:avr:mega src/src.ino
+echo "Build Complete. src.ino uploaded to SWAMP."
