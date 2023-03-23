@@ -192,6 +192,33 @@ void lightSensorStartup(){
     BH1750.start();
 }
 
+void readSerial(){
+    if (Serial.available() > 0)
+    {
+        char c = Serial.read();
+        if (c == 'l')
+        {
+            getLuxReading();
+        }
+        else if (c == 'w')
+        {
+            printWaterLevelStatus();
+        }
+        else if (c == 's')
+        {
+            printSoilMoistureStatus();
+        }
+    }
+}
+
+void readSerialExample(){
+    if (Serial.available() > 0){
+        String data = Serial.readStringUntil('\n');
+        Serial.print("You sent me: ");
+        Serial.println(data);
+    }
+}
+
 void setup() {
     leg1.attach(2);
     leg2.attach(3);
@@ -217,6 +244,7 @@ void setup() {
 
 
 void loop() {
+    readSerialExample();
 
     leg1.write(45);
     leg2.write(45);
