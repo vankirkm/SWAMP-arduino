@@ -220,32 +220,29 @@ void readSerialExample(){
 }
 
 void setup() {
+    // Initialize serial ports
+    Serial.println (F("Initializing..."));
+    Serial.begin(DEBUG_BAUDRATE);
+
     leg1.attach(2);
     leg2.attach(3);
     leg3.attach(4);
 
     memset(navGrid, 0, sizeof(navGrid));
 
-    // Initialize serial ports
-    Serial.println (F("Initializing..."));
-    Serial.begin(DEBUG_BAUDRATE);
-
-    // lightSensorStartup();
+    // Sensor Initialization
+    pinMode(liquidLevelPin,INPUT_PULLUP);
+    lightSensorStartup();
 
     while (!Serial);
     // TODO - uncomment when ready to integrate lidar sensor
     //Serial1.begin(TFMINI_BAUDRATE);
     //while(!Serial1);
 
-    // Liquid Level Sensor Initialize
-    pinMode(liquidLevelPin,INPUT_PULLUP);
-
 }
 
 
 void loop() {
-    readSerialExample();
-
     leg1.write(45);
     leg2.write(45);
     leg3.write(45);
@@ -255,13 +252,15 @@ void loop() {
     leg3.write(90);
     delay(1000);
 
+    // Sensor Readings
+    //
     // printWaterLevelStatus();
     // bool waterLevelStatus = getWaterLevelStatus();
-
-    printSoilMoistureStatus();
-    int soilMoistureStatus = getSoilMoistureStatus();
-
-    // getLuxReading();
+    // printSoilMoistureStatus();
+    // int soilMoistureStatus = getSoilMoistureStatus();
+    getLuxReading();
+    readSerialExample();
+    readSerial();
 
     // TODO - uncomment this code when ready to integrate lidar sensor
     // test rotating the lidar sensor 360 degrees and 
