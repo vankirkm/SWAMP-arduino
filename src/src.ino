@@ -126,6 +126,12 @@ void waterPlant(int waterTime){
     digitalWrite(waterPumpPin, LOW);
 }
 
+void waterFiveSeconds(){
+    digitalWrite(waterPumpPin, HIGH);
+    delay(5000);
+    digitalWrite(waterPumpPin, LOW);
+}
+
 void waterPumpOn(){
     digitalWrite(waterPumpPin, HIGH);
 }
