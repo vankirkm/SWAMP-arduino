@@ -120,6 +120,20 @@ void getGridObstacle(const int degRotation ) {
 
 }
 
+void waterPlant(int waterTime){
+    digitalWrite(waterPumpPin, HIGH);
+    delay(waterTime);
+    digitalWrite(waterPumpPin, LOW);
+}
+
+void waterPumpOn(){
+    digitalWrite(waterPumpPin, HIGH);
+}
+
+void waterPumpOff(){
+    digitalWrite(waterPumpPin, LOW);
+}
+
 bool getWaterLevelStatus(){
     #define liquidLevelPin 24
     bool liquidLevelStatus;
@@ -232,6 +246,9 @@ void setup() {
 
     // Sensor Initialization
     pinMode(liquidLevelPin,INPUT_PULLUP);
+    pinMode(soilMoistureSensorPin,INPUT);
+    pinMode(waterPumpPin,OUTPUT);
+
     lightSensorStartup();
 
     while (!Serial);
