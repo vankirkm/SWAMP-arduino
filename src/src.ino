@@ -146,6 +146,11 @@ int getSoilMoistureStatus(){
     int soilMoistureStatus = analogRead(soilMoistureSensorPin);
     return soilMoistureStatus;
 }
+void printSoilMoistureStatus(){
+    int soilMoistureStatus = getSoilMoistureStatus();
+    Serial.print(F("soilMoistureStatus = "));
+    Serial.println(soilMoistureStatus, DEC);
+}
 int getSoilMoisturePercent(int soilMoistureStatus){
     // The sensor has a range of 280 to 625 in my apartment
     // The sensor has a range of 260 to 570 in the Boffin Factory
@@ -153,10 +158,8 @@ int getSoilMoisturePercent(int soilMoistureStatus){
     #define wet 280
     return map(soilMoistureStatus, wet, dry, 100, 0);
 }
-void printSoilMoistureStatus(){
+void printSoilMoisturePercent(){
     int soilMoistureStatus = getSoilMoistureStatus();
-    Serial.print(F("soilMoistureStatus = "));
-    Serial.println(soilMoistureStatus, DEC);
     Serial.print(F("soilMoisturePercent = "));
     Serial.print(getSoilMoisturePercent(soilMoistureStatus), DEC);
     Serial.println(F("%"));
@@ -171,18 +174,12 @@ bool lightSensorConnected(){
     Serial.println(F("BH1750 sensor found!"));
     return true;
 }
-
-void getLuxReading(){
-    BH1750.start();              // starts a measurement
-    float lux = BH1750.getLux(); //  waits until a conversion finished
-    Serial.println(lux);
-    
-}
-
-void lightSensorStartup(){
+void lightSensorStartup()
+{
     if (!lightSensorConnected())
     {
-        while (true){
+        while (true)
+        {
         };
     }
     if (BH1750.calibrateTiming() < 2)
@@ -191,24 +188,13 @@ void lightSensorStartup(){
         Serial.println(F("Calibration FAILED"));
     BH1750.start();
 }
-
-void readSerial(){
-    if (Serial.available() > 0)
-    {
-        char c = Serial.read();
-        if (c == 'l')
-        {
-            getLuxReading();
-        }
-        else if (c == 'w')
-        {
-            printWaterLevelStatus();
-        }
-        else if (c == 's')
-        {
-            printSoilMoistureStatus();
-        }
-    }
+float getLuxReading(){
+    BH1750.start();              // starts a measurement
+    return BH1750.getLux(); //  waits until a conversion finished
+}
+void printLuxReading(){
+    Serial.print(F("Lux = "));
+    Serial.println(getLuxReading(), DEC);
 }
 
 void readSerialExample(){
@@ -217,6 +203,33 @@ void readSerialExample(){
         Serial.print("You sent me: ");
         Serial.println(data);
     }
+}
+void readSerial(){
+    if (Serial.available() > 0)
+    {
+        char c = Serial.read();
+        if (c == 'l'){
+            getLuxReading();
+        }
+        else if (c == 'w'){
+            printWaterLevelStatus();
+        }
+        else if (c == 's'){
+            printSoilMoistureStatus();
+        }
+        else if (c == 'm'){
+            printSoilMoisturePercent();
+        }
+        else if (c == 'p'){
+            // TODO: turn on water pump here, use function with preset time
+        }
+    }
+}
+void piComm(){
+    printWaterLevelStatus();
+    printSoilMoistureStatus();
+    printSoilMoisturePercent();
+    printLuxReading();
 }
 
 void setup() {
@@ -252,14 +265,7 @@ void loop() {
     leg3.write(90);
     delay(1000);
 
-    // Sensor Readings
-    //
-    // printWaterLevelStatus();
-    // bool waterLevelStatus = getWaterLevelStatus();
-    // printSoilMoistureStatus();
-    // int soilMoistureStatus = getSoilMoistureStatus();
-    getLuxReading();
-    readSerialExample();
+    piComm();
     readSerial();
 
     // TODO - uncomment this code when ready to integrate lidar sensor
