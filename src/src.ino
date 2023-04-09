@@ -133,12 +133,7 @@ int getWaterLevelStatus(){
 void printWaterLevelStatus(){
     bool waterLevelStatus = getWaterLevelStatus();
     Serial.print(F("waterLevelStatus = "));
-    if(waterLevelStatus){
-        Serial.println(F("water detected"));
-    }else{
-        Serial.println(F("water NOT detected"));
-    }
-    // Serial.println(waterLevelStatus);
+    Serial.println(waterLevelStatus, DEC);
 }
 
 int getSoilMoistureStatus(){
