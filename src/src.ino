@@ -1,3 +1,5 @@
+#include <hp_BH1750.h>
+
 /* 
 *   S.W.A.M.P. Arduino Driver 
 *   Michael Van Kirk, Matthew Slusser
@@ -16,6 +18,9 @@
 
 #define DEBUG_BAUDRATE 115200
 #define TFMINI_BAUDRATE 115200
+#define waterPumpPin 22
+
+hp_BH1750 BH1750; // creates sensor object
 
 // LegGroup - A struct that defines the interface used to 
 // define a leg in software. Each leg consists of 3 servos
@@ -125,6 +130,78 @@ void getGridObstacle(const int degRotation ) {
 
 }
 
+bool getWaterLevelStatus(){
+    #define liquidLevelPin 24
+    bool liquidLevelStatus;
+    if(digitalRead(liquidLevelPin) == 1){
+        liquidLevelStatus = false;
+    }else{
+        liquidLevelStatus = true;
+    }
+    return liquidLevelStatus;
+}
+void printWaterLevelStatus(){
+    bool waterLevelStatus = getWaterLevelStatus();
+    Serial.print(F("waterLevelStatus = "));
+    if(waterLevelStatus){
+        Serial.println(F("water detected"));
+    }else{
+        Serial.println(F("water NOT detected"));
+    }
+    // Serial.println(waterLevelStatus);
+}
+
+int getSoilMoistureStatus(){
+    #define soilMoistureSensorPin 4
+    int soilMoistureStatus = analogRead(soilMoistureSensorPin);
+    return soilMoistureStatus;
+}
+int getSoilMoisturePercent(int soilMoistureStatus){
+    // The sensor has a range of 280 to 625 in my apartment
+    // The sensor has a range of 260 to 570 in the Boffin Factory
+    #define dry 625
+    #define wet 280
+    return map(soilMoistureStatus, wet, dry, 100, 0);
+}
+void printSoilMoistureStatus(){
+    int soilMoistureStatus = getSoilMoistureStatus();
+    Serial.print(F("soilMoistureStatus = "));
+    Serial.println(soilMoistureStatus, DEC);
+    Serial.print(F("soilMoisturePercent = "));
+    Serial.print(getSoilMoisturePercent(soilMoistureStatus), DEC);
+    Serial.println(F("%"));
+}
+
+bool lightSensorConnected(){
+    if(!BH1750.begin(BH1750_TO_GROUND))
+    { // init the sensor with address pin connetcted to ground
+        Serial.println(F("No BH1750 sensor found!"));
+        return false;
+    }
+    Serial.println(F("BH1750 sensor found!"));
+    return true;
+}
+
+void getLuxReading(){
+    BH1750.start();              // starts a measurement
+    float lux = BH1750.getLux(); //  waits until a conversion finished
+    Serial.println(lux);
+    
+}
+
+void lightSensorStartup(){
+    if (!lightSensorConnected())
+    {
+        while (true){
+        };
+    }
+    if (BH1750.calibrateTiming() < 2)
+        Serial.println(F("Calibration OK"));
+    else
+        Serial.println(F("Calibration FAILED"));
+    BH1750.start();
+}
+
 void forwardStep() {
     int midPosition = 60;
     int kneeMidPoint = 60;
@@ -195,36 +272,41 @@ void centipedeStep() {
                 leftLegs[i].hip.write(leftHipPosition);
             }
             if(j <= 30) {
-                kneePosition++;
+                kneePosition--;
                 leftLegs[i].knee.write(kneePosition);
             } else {
-                kneePosition--;
+                kneePosition++;
                 leftLegs[i].knee.write(kneePosition);
                 leftLegs[i].ankle.write(kneePosition);
             }
             delay(5);
+        }
+            delay(20);
             kneePosition = 60;
+        for(int j = 0; j < 60; j++) {
             if(j % 3 == 0) {
                 rightHipPosition--;
                 rightLegs[i].hip.write(rightHipPosition);
             }
             if(j <= 30) {
-                kneePosition++;
+                kneePosition--;
                 rightLegs[i].knee.write(kneePosition);
             } else {
-                kneePosition--;
+                kneePosition++;
                 rightLegs[i].knee.write(kneePosition);
                 rightLegs[i].ankle.write(kneePosition);
             }
+            delay(5);
         }
+        delay(20);
     }
-
-    for(int i = 0; i < 30; i++) {
+    delay(20);
+    for(int i = 0; i < 20; i++) {
         for(int j = 0; j < 3; j++) {
             rightHipPosition++;
             leftHipPosition--;
             leftLegs[j].hip.write(leftHipPosition);
-            leftLegs[j].hip.write(rightHipPosition);
+            rightLegs[j].hip.write(rightHipPosition);
         }
         delay(5);
     }
@@ -290,13 +372,20 @@ void setup() {
     // TODO - uncomment when ready to integrate lidar sensor
     //Serial1.begin(TFMINI_BAUDRATE);
     //while(!Serial1);
+
+    // Liquid Level Sensor Initialize
+    pinMode(liquidLevelPin,INPUT_PULLUP);
 }
 
 
 void loop() {
 
-    forwardStep();
+    //forwardStep();
+    centipedeStep();
     delay(20);
+
+    printSoilMoistureStatus();
+    int soilMoistureStatus = getSoilMoistureStatus();
 
 
     // TODO - uncomment this code when ready to integrate lidar sensor
