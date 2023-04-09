@@ -120,13 +120,13 @@ void getGridObstacle(const int degRotation ) {
 
 }
 
-bool getWaterLevelStatus(){
+int getWaterLevelStatus(){
     #define liquidLevelPin 24
-    bool liquidLevelStatus;
+    int liquidLevelStatus;
     if(digitalRead(liquidLevelPin) == 1){
-        liquidLevelStatus = false;
+        liquidLevelStatus = 0;
     }else{
-        liquidLevelStatus = true;
+        liquidLevelStatus = 1;
     }
     return liquidLevelStatus;
 }
@@ -188,7 +188,7 @@ void lightSensorStartup()
         Serial.println(F("Calibration FAILED"));
     BH1750.start();
 }
-float getLuxReading(){
+int getLuxReading(){
     BH1750.start();              // starts a measurement
     return BH1750.getLux(); //  waits until a conversion finished
 }
