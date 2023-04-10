@@ -15,6 +15,10 @@
 
 
 #include <Servo.h>
+#include <HardwareSerial.h>
+#include <time.h>
+#include <stdlib.h>
+#include "PathFinder.h"
 
 #define DEBUG_BAUDRATE 115200
 #define TFMINI_BAUDRATE 115200
@@ -37,9 +41,10 @@ struct LegGroup {
 // lidar sensor and scale = the size in physical space the each grid
 // cell represents (cm)
 // However, the arduino mega won't allow us to put more that 8k bytes
-// into memory so for now we have to go with an 80x80 grid
-#define MAP_SIZE 80
-#define MIDDLE_POSITION 40
+// into memory so for now we have to go with a 20x20 grid
+#define MAP_SIZE 20
+#define MIDDLE_POSITION 10
+#define PATH_LENGTH 100
 
 int distance = 0;
 int strength = 0;
@@ -124,7 +129,7 @@ void getGridObstacle(const int degRotation ) {
     Serial.print("y component: ");
     Serial.println(y);
     
-    if((x < 80 && y < 80) && (x >=0 && y >= 0)) {
+    if((x < 20 && y < 20) && (x >=0 && y >= 0)) {
         navGrid[x][y] = 1;
     }
 
@@ -312,6 +317,45 @@ void centipedeStep() {
     }
 
 }
+
+
+// pathfinding test functions
+void testGetOptimalPath() {
+    byte testGrid[MAP_SIZE][MAP_SIZE] {0};
+
+    srand(time(NULL));
+
+    for(int i = 0; i < MAP_SIZE; i++) {
+        for(int j = 0; j < MAP_SIZE; j++) {
+            int random = rand() % 10;
+            if(random == 1)
+                testGrid[i][j] = 1;
+            else
+                testGrid[i][j] = 0;
+        }
+    }
+
+    int randRow = rand() % MAP_SIZE;
+    int randCol = rand() % MAP_SIZE;
+    testGrid[randRow][randCol] = 2;
+
+    byte pathList[PATH_LENGTH];
+    PathFinder pathFinder;
+    Node goal;
+    goal.row = randRow;
+    goal.col = randCol;
+    pathFinder.findPath(testGrid, pathList, 10, 10, goal);
+
+    for(int i = 0; i < PATH_LENGTH; i++) {
+        if(pathList[i] == 0) {
+            break;
+        } else {
+            Serial.print(pathList[i]);
+            Serial.print(", ");
+        }
+    }
+}
+
 
 void setup() {
 
